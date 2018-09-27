@@ -1,0 +1,172 @@
+apiVersion: xl-release/v1beta1
+kind: Configurations
+spec:
+- directory: XL
+
+---
+
+apiVersion: xl-release/v1beta1
+kind: Configurations
+spec:
+  - name: Global XLDeploy Config
+    type: xldeploy.XLDeployServer
+    url: http://xld:4516
+    username: admin
+    password: admin
+
+---
+
+apiVersion: xl-release/v1beta1
+kind: Configurations
+metadata:
+  home: XL
+spec:
+  - directory: AsCode
+    children:
+    - name: XLDeploy Config
+      type: xldeploy.XLDeployServer
+      url: http://xld:4516
+      username: admin
+      password: admin
+
+---
+
+apiVersion: xl-release/v1beta1
+kind: Configurations
+metadata:
+  home: XL
+spec:
+  - directory: AsCode
+    children:
+    - name: Git repository
+      type: git.Repository
+      url: http://github.com
+      username: admin
+      password: admin
+
+---
+
+
+apiVersion: xl-release/v1beta1
+kind: Templates
+metadata:
+  home: XL
+spec:
+  - directory: AsCode
+    children:
+    - name: As Code child release
+      type: xlrelease.Release
+      description: |
+        This XL Release template is a child of As Code integration test
+      variables:
+      - type: xlrelease.StringVariable
+        key: version
+        label: release version
+        description: this variable contains the version of the release
+      phases:
+      - name: Child release phase 1
+        type: xlrelease.Phase
+        tasks:
+        - name: Child task
+          type: xlrelease.Task
+          team: Release Admin
+
+---
+
+apiVersion: xl-release/v1beta1
+kind: Templates
+metadata:
+  home: XL
+spec:
+  - directory: AsCode
+    children:
+    - name: As Code integration test
+      type: xlrelease.Release
+      description: |
+        This XL Release template performs a demo scenario.
+      scriptUsername: admin
+      scriptUserPassword: admin
+      tags:
+      - AWS
+      variables:
+      - type: xlrelease.StringVariable
+        key: version
+        label: release version
+        description: this variable contains the version of the release
+        value: 2
+      - type: xlrelease.IntegerVariable
+        key: hiddenVar
+        label: hidden variable
+        description: this variable is not required and does not show up on create release form
+        value: 42
+        requiresValue: false
+        showOnReleaseStart: false
+      releaseTriggers:
+      - type: git.Poll
+        initialFire: false
+        name: Git poll trigger
+        releaseTitle: Release created by trigger
+        pollType: REPEAT
+        periodicity: 10
+        enabled: false
+        gitRepository: Git repository
+        username: admin
+        password: s3cr3t
+      phases:
+      - name: AWS provisioning
+        color: '#ff9e3b'
+        type: xlrelease.Phase
+        tasks:
+        - name: Ready to start?
+          type: xlrelease.GateTask
+          team: Release Admin
+        - name: Deployments
+          type: xlrelease.ParallelGroup
+          tasks:
+          - name: Deployments
+            type: xlrelease.SequentialGroup
+            tasks:
+            - name: Deploy Backend Node 1
+              type: xldeploy.Deploy
+              server: XLDeploy Config
+              team: Release Admin
+            - name: Deploy Backend Node 2
+              type: xldeploy.Deploy
+              server: XLDeploy Config
+              team: Release Admin
+          - name: Deployments
+            type: xlrelease.SequentialGroup
+            tasks:
+            - name: Deploy Frontend Node 1
+              type: xldeploy.Deploy
+              server: XLDeploy Config
+              team: Release Admin
+            - name: Deploy Frontend Node 2
+              type: xldeploy.Deploy
+              server: XLDeploy Config
+              team: Release Admin
+      - name: Rest-o-rant is live
+        type: xlrelease.Phase
+        tasks:
+        - name: Start Feature Delivery Process
+          type: xlrelease.CreateReleaseTask
+          templateId: As Code child release
+          newReleaseTitle: 'Release process for something'
+          templateVariables:
+          - key: version
+            type: xlrelease.StringVariable
+            value: ${version}
+        - name: Check Rest-o-Rant
+          type: xlrelease.Task
+          description: |
+            The Rest-o-rant app is now live on Kubernetes!
+
+            Check out the web site and complete this task when done.
+
+            Find the URL by running this command:
+
+            ```
+            minikube service rest-o-rant-web --url
+            ```
+          team: Release admin
+
