@@ -1,5 +1,7 @@
 pipeline {
 
+    agent any
+
     stages {
         stage("Apply XLD") {
             steps {
