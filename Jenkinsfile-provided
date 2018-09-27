@@ -6,10 +6,8 @@ pipeline {
         stage("Apply XLD") {
             steps {
                echo 'Applying XLD'
-               script {
-                   def ret = sh(script: '/tmp/xl apply -v -f yaml/xld.yaml --xl-deploy-url http://xld:4516/ --xl-deploy-username admin --xl-deploy-password admin', returnStdout: true)
-                   println ret
-               }
+
+               sh '/tmp/xl apply -v -f yaml/xld.yaml --xl-deploy-url http://xld:4516/ --xl-deploy-username admin --xl-deploy-password admin'
             }
         }
     }
