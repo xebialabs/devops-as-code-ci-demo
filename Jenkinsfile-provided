@@ -5,9 +5,10 @@ pipeline {
     stages {
         stage("Apply XLD") {
             steps {
-               echo 'Applying XLD'
-
-               sh '/tmp/xl apply -v -f yaml/xld.yaml --xl-deploy-url http://xld:4516/ --xl-deploy-username admin --xl-deploy-password admin'
+                echo 'Applying XLD'
+                withCredentials([usernamePassword(credentialsId: 'xld', usernameVariable: 'xld_username', passwordVariable: 'xld_password')]) {
+                    sh "/tmp/xl apply -v -f yaml/xld.yaml --xl-deploy-url http://xld:4516 --xl-deploy-username ${xld_username} --xl-deploy-password ${xld_password}"
+                }
             }
         }
     }
