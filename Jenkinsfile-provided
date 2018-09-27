@@ -6,7 +6,7 @@ pipeline {
         stage("Apply XLD") {
             steps {
                echo 'Applying XLD'
-               sh '/tmp/xl apply -f yaml/xld.yaml --xl-deploy-url http://xld:4516/ --xl-deploy-user admin --xl-deploy-password admin'
+               sh '/tmp/xl apply -f yaml/xld.yaml --xl-deploy-url http://xld:4516/ --xl-deploy-username admin --xl-deploy-password admin'
             }
         }
     }
