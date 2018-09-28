@@ -9,21 +9,24 @@
 #
 # prerequisites
 # - curl
-# - bash
+# - bash (not posix compliant currently)
 #
 # Supported corner cases
-# - when script is executed from different location that project dir
-# - when multiple builds of same project are started at the same time
-# - when script is killed at the point of side effects are happening
+# - when script is executed from different location (in other words working dir != project dir) that project dir context is set correctly
+# - when multiple builds of same project are started at the same time it will wait
+# - when script is killed at the point of side effects are happening everything is deleted
 #
 # TODO
-# - can we make it work with sh?
-# - check if posix complient? https://www.shellcheck.net
-# - switch to wget if curl is not provided
+# - instead of lockfile use an atomic copy? (vincent)
+# - implement support for switching CLI_LOCATION (HOME OR PROJECT)
+# - can we make it work with just sh?
+# - check if posix compliant? https://www.shellcheck.net
+# - switch to wget if curl is not provided (or other tools)
+# - does PROG_DIR detection really work with all corner cases and on different OS?
 
 set -e
 
-# script path, filename, directory
+# detecting program dir
 PROG_DIR="$(cd "$(dirname "${0:-$PWD}")" 2>/dev/null 1>&2 && pwd)"
 
 echo "PROG_DIR=${PROG_DIR}"
