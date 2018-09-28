@@ -24,12 +24,8 @@
 set -e
 
 # script path, filename, directory
-PROG_PATH=${BASH_SOURCE[0]}      # this script's name
-PROG_NAME=${PROG_PATH##*/}       # basename of script (strip path)
-PROG_DIR="$(cd "$(dirname "${PROG_PATH:-$PWD}")" 2>/dev/null 1>&2 && pwd)"
+PROG_DIR="$(cd "$(dirname "${0:-$PWD}")" 2>/dev/null 1>&2 && pwd)"
 
-echo "PROG_PATH=${PROG_PATH}"
-echo "PROG_NAME=${PROG_NAME}"
 echo "PROG_DIR=${PROG_DIR}"
 
 source "${PROG_DIR}/xl/wrapper/wrapper.config"
