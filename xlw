@@ -1,0 +1,93 @@
+#!/usr/bin/env sh
+
+##############################################################################
+##
+##  XL Cli wrapper script for Linux/Darwin
+##
+##############################################################################
+
+#
+# prerequisites
+# - curl
+# - sh (bash?)
+#
+# Supported corner cases
+# - when script is executed from different location that project dir
+# - when multiple builds of same project are started at the same time
+# - when script is killed at the point of side effects are happening
+#
+# TODO
+# - check if posix complient? https://www.shellcheck.net
+# - does it work with pure sh and do we not rely on bash?
+# - switch to wget if curl is not provided
+
+set -e
+
+# script path, filename, directory
+PROG_PATH=${BASH_SOURCE[0]}      # this script's name
+PROG_NAME=${PROG_PATH##*/}       # basename of script (strip path)
+PROG_DIR="$(cd "$(dirname "${PROG_PATH:-$PWD}")" 2>/dev/null 1>&2 && pwd)"
+
+echo "PROG_PATH=${PROG_PATH}"
+echo "PROG_NAME=${PROG_NAME}"
+echo "PROG_DIR=${PROG_DIR}"
+
+source "${PROG_DIR}/xl/wrapper/wrapper.config"
+
+XL_WRAPPER_HOME="${HOME}/.xebialabs/wrapper/${CLI_VERSION}"
+
+echo "CLI_BASE=${CLI_BASE}"
+echo "CLI_VERSION=${CLI_VERSION}"
+echo "XL_WRAPPER_HOME=${XL_WRAPPER_HOME}"
+
+BINARY_TYPE="unknown"
+case "`uname`" in
+  Darwin* )
+    BINARY_TYPE="darwin-amd64"
+    ;;
+  Linux* )
+    BINARY_TYPE="linux-amd64"
+    ;;
+esac
+
+echo "BINARY_TYPE=${BINARY_TYPE}"
+
+# not sure if we want to be so strict
+if [ ${BINARY_TYPE} = "unknown" ] ; then
+    echo "Unsupported OS `uname`"
+    exit 1
+fi
+
+# find target location
+if [ ! -d "${XL_WRAPPER_HOME}" ] ; then
+  echo "Creating XL wrapper folder at ${XL_WRAPPER_HOME}"
+  mkdir -p "${XL_WRAPPER_HOME}"
+fi
+
+# if lock file exists wait till timeout
+XL_WRAPPER_LOCK="${XL_WRAPPER_HOME}/.lock"
+COUNTER=0
+while [ -f "${XL_WRAPPER_LOCK}" ] ;
+do
+  if [ $COUNTER -gt 300 ] ; then
+    echo "Timeout exceeded while waiting for CLI to be downloaded"
+    exit 1
+  fi
+  sleep 1
+  let COUNTER=COUNTER+1
+  echo "Waiting for CLI to be downloaded by different process ${COUNTER}"
+done
+
+# else if xl does not exist download (lock should not exist now)
+XL_WRAPPER_BIN="${XL_WRAPPER_HOME}/xl"
+if [ ! -f "${XL_WRAPPER_BIN}" ] ; then
+  trap 'rm -f ${XL_WRAPPER_LOCK} ${XL_WRAPPER_BIN}' 1 2 3 6
+  touch "${XL_WRAPPER_LOCK}"
+  echo "Downloading xl client"
+  curl -Lo "${XL_WRAPPER_BIN}" "${CLI_BASE_URL}/${CLI_VERSION}/${BINARY_TYPE}/xl"
+  chmod +x "${XL_WRAPPER_BIN}"
+  rm -f "${XL_WRAPPER_LOCK}"
+fi
+
+# now run xl cli
+exec ${XL_WRAPPER_BIN} "$@"
