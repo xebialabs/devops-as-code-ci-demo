@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 ##############################################################################
 ##
@@ -9,7 +9,7 @@
 #
 # prerequisites
 # - curl
-# - sh (bash?)
+# - bash
 #
 # Supported corner cases
 # - when script is executed from different location that project dir
@@ -17,8 +17,8 @@
 # - when script is killed at the point of side effects are happening
 #
 # TODO
+# - can we make it work with sh?
 # - check if posix complient? https://www.shellcheck.net
-# - does it work with pure sh and do we not rely on bash?
 # - switch to wget if curl is not provided
 
 set -e
