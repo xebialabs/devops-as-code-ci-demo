@@ -6,6 +6,8 @@
 ##
 ##############################################################################
 
+DEFAULT_CLI_VERSION=8.5.0-alpha.5
+
 #
 # prerequisites
 # - curl
@@ -31,7 +33,20 @@ PROG_DIR="$(cd "$(dirname "${0:-$PWD}")" 2>/dev/null 1>&2 && pwd)"
 
 echo "PROG_DIR=${PROG_DIR}"
 
-source "${PROG_DIR}/xl/wrapper/wrapper.config"
+XL_WRAPPER_CONFIG_DIR="${PROG_DIR}/xl/wrapper"
+XL_WRAPPER_CONFIG_FILE="${XL_WRAPPER_CONFIG_DIR}/wrapper.config"
+
+if [ ! -f ${XL_WRAPPER_CONFIG_FILE} ]
+then
+  echo "Creating wrapper config file."
+  mkdir -p "${PROG_DIR}/xl/wrapper"
+  touch $XL_WRAPPER_CONFIG_FILE
+  echo "CLI_LOCATION=HOME" >> $XL_WRAPPER_CONFIG_FILE
+  echo "CLI_BASE_URL=https://s3.amazonaws.com/xl-cli/bin" >> $XL_WRAPPER_CONFIG_FILE
+  echo "CLI_VERSION=${DEFAULT_CLI_VERSION}" >> $XL_WRAPPER_CONFIG_FILE
+fi
+
+source ${XL_WRAPPER_CONFIG_FILE}
 
 XL_WRAPPER_HOME="${HOME}/.xebialabs/wrapper/${CLI_VERSION}"
 
