@@ -112,7 +112,7 @@ spec:
 apiVersion: xl-release/v1beta1
 kind: Release
 spec:
-  name: !value release.name
+  name: !value RELEASE_NAME
   template: REST-o-rant/REST-o-rant on Docker
   variables:
-    BUILD_NUMBER: !value build.number
+    BUILD_NUMBER: !value BUILD_NUMBER
