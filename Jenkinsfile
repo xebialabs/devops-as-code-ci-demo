@@ -4,7 +4,14 @@ pipeline {
 
     environment {
         XL_DEPLOY_URL = "http://xl-deploy:4516"
+        XL_DEPLOY_CREDENTIALS = credentials("xld-credentials")
+        XL_DEPLOY_USERNAME = "${env.XL_DEPLOY_CREDENTIALS_USR}"
+        XL_DEPLOY_PASSWORD = "${env.XL_DEPLOY_CREDENTIALS_PSW}"
+
         XL_RELEASE_URL = "http://xl-release:5516"
+        XL_RELEASE_CREDENTIALS = credentials("xlr-credentials")
+        XL_RELEASE_USERNAME = "${env.XL_RELEASE_CREDENTIALS_USR}"
+        XL_RELEASE_PASSWORD = "${env.XL_RELEASE_CREDENTIALS_PSW}"
     }
 
     stages {
@@ -15,13 +22,8 @@ pipeline {
             }
 
             steps {
-                withCredentials([usernamePassword(credentialsId: 'xld-credentials', usernameVariable: 'xld_username', passwordVariable: 'xld_password')]) {
-                    withCredentials([usernamePassword(credentialsId: 'xlr-credentials', usernameVariable: 'xlr_username', passwordVariable: 'xlr_password')]) {
-                        sh "./xlw apply -v -f xebialabs.yaml --xl-deploy-username ${xld_username} --xl-deploy-password ${xld_password} --xl-release-username ${xlr_username} --xl-release-password ${xlr_password}"
-                    }
-                }
+                sh "./xlw apply -v -f xebialabs.yaml"
             }
         }
     }
-
 }
