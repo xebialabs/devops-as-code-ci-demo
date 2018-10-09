@@ -6,54 +6,16 @@
 ##
 ##############################################################################
 
-DEFAULT_CLI_VERSION=8.5.0-alpha.5
-
-#
-# prerequisites
-# - curl
-# - bash (not posix compliant currently)
-#
-# Supported corner cases
-# - when script is executed from different location (in other words working dir != project dir) that project dir context is set correctly
-# - when multiple builds of same project are started at the same time it will wait
-# - when script is killed at the point of side effects are happening everything is deleted
-#
-# TODO
-# - instead of lockfile use an atomic copy? (vincent)
-# - implement support for switching CLI_LOCATION (HOME OR PROJECT)
-# - can we make it work with just sh?
-# - check if posix compliant? https://www.shellcheck.net
-# - switch to wget if curl is not provided (or other tools)
-# - does PROG_DIR detection really work with all corner cases and on different OS?
-
 set -e
 
 # detecting program dir
 PROG_DIR="$(cd "$(dirname "${0:-$PWD}")" 2>/dev/null 1>&2 && pwd)"
 
-echo "PROG_DIR=${PROG_DIR}"
-
-XL_WRAPPER_CONFIG_DIR="${PROG_DIR}/xl/wrapper"
-XL_WRAPPER_CONFIG_FILE="${XL_WRAPPER_CONFIG_DIR}/wrapper.config"
-
-if [ ! -f ${XL_WRAPPER_CONFIG_FILE} ]
-then
-  echo "Creating wrapper config file."
-  mkdir -p "${PROG_DIR}/xl/wrapper"
-  touch $XL_WRAPPER_CONFIG_FILE
-  echo "CLI_LOCATION=HOME" >> $XL_WRAPPER_CONFIG_FILE
-  echo "CLI_BASE_URL=https://s3.amazonaws.com/xl-cli/bin" >> $XL_WRAPPER_CONFIG_FILE
-  echo "CLI_VERSION=${DEFAULT_CLI_VERSION}" >> $XL_WRAPPER_CONFIG_FILE
-fi
-
-source ${XL_WRAPPER_CONFIG_FILE}
+source "${PROG_DIR}/xl/wrapper/wrapper.conf"
 
 XL_WRAPPER_HOME="${HOME}/.xebialabs/wrapper/${CLI_VERSION}"
 
-echo "CLI_BASE=${CLI_BASE}"
-echo "CLI_VERSION=${CLI_VERSION}"
-echo "XL_WRAPPER_HOME=${XL_WRAPPER_HOME}"
-
+# checking OS
 BINARY_TYPE="unknown"
 case "`uname`" in
   Darwin* )
@@ -64,9 +26,6 @@ case "`uname`" in
     ;;
 esac
 
-echo "BINARY_TYPE=${BINARY_TYPE}"
-
-# not sure if we want to be so strict
 if [ ${BINARY_TYPE} = "unknown" ] ; then
     echo "Unsupported OS `uname`"
     exit 1
@@ -74,34 +33,17 @@ fi
 
 # find target location
 if [ ! -d "${XL_WRAPPER_HOME}" ] ; then
-  echo "Creating XL wrapper folder at ${XL_WRAPPER_HOME}"
   mkdir -p "${XL_WRAPPER_HOME}"
 fi
 
-# if lock file exists wait till timeout
-XL_WRAPPER_LOCK="${XL_WRAPPER_HOME}/.lock"
-COUNTER=0
-while [ -f "${XL_WRAPPER_LOCK}" ] ;
-do
-  if [ $COUNTER -gt 300 ] ; then
-    echo "Timeout exceeded while waiting for CLI to be downloaded"
-    exit 1
-  fi
-  sleep 1
-  let COUNTER=COUNTER+1
-  echo "Waiting for CLI to be downloaded by different process ${COUNTER}"
-done
-
-# else if xl does not exist download (lock should not exist now)
-XL_WRAPPER_BIN="${XL_WRAPPER_HOME}/xl"
-if [ ! -f "${XL_WRAPPER_BIN}" ] ; then
-  trap 'rm -f ${XL_WRAPPER_LOCK} ${XL_WRAPPER_BIN}' 1 2 3 6
-  touch "${XL_WRAPPER_LOCK}"
-  echo "Downloading xl client"
-  curl -Lo "${XL_WRAPPER_BIN}" "${CLI_BASE_URL}/${CLI_VERSION}/${BINARY_TYPE}/xl"
-  chmod +x "${XL_WRAPPER_BIN}"
-  rm -f "${XL_WRAPPER_LOCK}"
+# if xl does not exist download it
+XL_BIN="${XL_WRAPPER_HOME}/xl"
+if [ ! -f "${XL_BIN}" ] ; then
+  echo "Downloading xl binary to ${XL_BIN}"
+  curl -fLso "${XL_BIN}.$$" "${CLI_BASE_URL}/${CLI_VERSION}/${BINARY_TYPE}/xl"
+  chmod +x "${XL_BIN}.$$"
+  mv "${XL_BIN}.$$" "${XL_BIN}"
 fi
 
 # now run xl cli
-exec ${XL_WRAPPER_BIN} "$@"
+exec "${XL_BIN}" "$@"
