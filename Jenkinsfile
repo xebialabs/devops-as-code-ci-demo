@@ -1,6 +1,8 @@
 pipeline {
 
-    agent none
+    agent {
+	label 'master'
+    }
 
     environment {
         XL_DEPLOY_URL = "http://xl-deploy:4516"
