@@ -13,31 +13,33 @@ pipeline {
     }
 
     stages {
-        stage("Apply xebialabs.yaml on Linux") {
-            agent {
-                label 'master'
-            }
-            environment {
-                XL_VALUE_BUILD_NUMBER = "${currentBuild.id}"
-                XL_VALUE_RELEASE_NAME = "Pipeline for ${currentBuild.id}"
+        parallel {
+            stage("Apply xebialabs.yaml on Linux") {
+                agent {
+                    label 'master'
+                }
+                environment {
+                    XL_VALUE_BUILD_NUMBER = "${currentBuild.id}"
+                    XL_VALUE_RELEASE_NAME = "Pipeline for ${currentBuild.id}"
+                }
+
+                steps {
+                    sh "./xlw apply -v -f xebialabs.yaml"
+                }
             }
 
-            steps {
-                sh "./xlw apply -v -f xebialabs.yaml"
-            }
-        }
+            stage("Apply xebialabs.yaml on Windows") {
+                agent {
+                    label 'windows'
+                }
+                environment {
+                    XL_VALUE_BUILD_NUMBER = "${currentBuild.id}"
+                    XL_VALUE_RELEASE_NAME = "Pipeline for ${currentBuild.id}"
+                }
 
-        stage("Apply xebialabs.yaml on Windows") {
-            agent {
-                label 'windows'
-            }
-            environment {
-                XL_VALUE_BUILD_NUMBER = "${currentBuild.id}"
-                XL_VALUE_RELEASE_NAME = "Pipeline for ${currentBuild.id}"
-            }
-
-            steps {
-                bat "xlw.bat apply -v -f xebialabs.yaml"
+                steps {
+                    bat "xlw.bat apply -v -f xebialabs.yaml"
+                }
             }
         }
     }
