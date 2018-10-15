@@ -22,7 +22,7 @@ pipeline {
             }
 
             steps {
-                sh "./xlw apply -v -f xebialabs.yaml"
+                sh "xlw apply -v -f xebialabs.yaml"
             }
         }
     }
