@@ -1,9 +1,5 @@
 pipeline {
-
-    agent {
-	label 'master'
-    }
-
+    agent any
     environment {
         XL_DEPLOY_URL = "http://xl-deploy:4516"
         XL_DEPLOY_CREDENTIALS = credentials("xld-credentials")
@@ -17,7 +13,10 @@ pipeline {
     }
 
     stages {
-        stage("Apply xebialabs.yaml") {
+        stage("Apply xebialabs.yaml on Linux") {
+            agent {
+                label 'master'
+            }
             environment {
                 XL_VALUE_BUILD_NUMBER = "${currentBuild.id}"
                 XL_VALUE_RELEASE_NAME = "Pipeline for ${currentBuild.id}"
@@ -25,6 +24,20 @@ pipeline {
 
             steps {
                 sh "./xlw apply -v -f xebialabs.yaml"
+            }
+        }
+
+        stage("Apply xebialabs.yaml on Windows") {
+            agent {
+                label 'windows'
+            }
+            environment {
+                XL_VALUE_BUILD_NUMBER = "${currentBuild.id}"
+                XL_VALUE_RELEASE_NAME = "Pipeline for ${currentBuild.id}"
+            }
+
+            steps {
+                bat "xlw.bat apply -v -f xebialabs.yaml"
             }
         }
     }
