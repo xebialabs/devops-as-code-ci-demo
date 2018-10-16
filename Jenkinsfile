@@ -22,7 +22,7 @@ pipeline {
                 XL_VALUE_RELEASE_NAME = "Pipeline for ${currentBuild.id}"
             }
             steps {
-                sh "xlw apply -v -f xebialabs.yaml"
+                sh "./xlw apply -v -f xebialabs.yaml"
             }
         }
     }
