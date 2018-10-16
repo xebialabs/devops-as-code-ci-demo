@@ -39,8 +39,7 @@ pipeline {
                     }
 
                     steps {
-                        bat '''call xlw.bat apply -v -f test.yaml
-                        exit %ERRORLEVEL%'''
+                        bat "xlw.bat apply -v -f test.yaml"
                     }
                 }
             }
