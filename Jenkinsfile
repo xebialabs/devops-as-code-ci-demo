@@ -39,7 +39,8 @@ pipeline {
                     }
 
                     steps {
-                        bat "xlw.bat apply -v -f xebialabs.yaml"
+                        bat '''call xlw.bat apply -v -f xebialabs.yaml;
+                        exit %ERRORLEVEL%'''
                     }
                 }
             }
