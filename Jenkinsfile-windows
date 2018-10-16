@@ -15,14 +15,14 @@ pipeline {
     stages {
         stage("Apply xebialabs.yaml") {
             agent {
-                label 'master'
+                label 'windows'
             }
             environment {
                 XL_VALUE_BUILD_NUMBER = "${currentBuild.id}"
                 XL_VALUE_RELEASE_NAME = "Pipeline for ${currentBuild.id}"
             }
             steps {
-                sh "xlw apply -v -f xebialabs.yaml"
+                bat "xlw.bat apply -v -f xebialabs.yaml"
             }
         }
     }
