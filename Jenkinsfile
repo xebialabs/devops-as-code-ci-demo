@@ -39,7 +39,7 @@ pipeline {
                     }
 
                     steps {
-                        bat "xlw.bat apply -v -f test.yaml"
+                        bat "xlw.bat apply -v -f xebialabs.yaml"
                     }
                 }
             }
