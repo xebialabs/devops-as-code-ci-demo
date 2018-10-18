@@ -1,0 +1,51 @@
+resources:
+- repo: self
+queue:
+  name: Default
+steps:
+- task: DockerCompose@0
+  displayName: 'Run a Docker Compose command'
+  inputs:
+    containerregistrytype: 'Container Registry'
+
+    dockerRegistryEndpoint: 'Docker XL'
+
+    dockerComposeCommand: 'up -d'
+
+
+- task: AzureKeyVault@1
+  displayName: 'Azure Key Vault: gitopsVault'
+  inputs:
+    azureSubscription: 'Free Trial (56c36adf-5db4-4dd8-9cdd-256b89a34bce)'
+
+    KeyVaultName: gitopsVault
+
+    SecretsFilter: testSecret
+
+
+- bash: |
+   # Write your commands here
+   
+   # Use the environment variables input below to pass secret variables to this script
+   
+   sleep 120
+   
+   export DOCKER_PORT=$(docker port gitops_xl-release_1 5516 | awk -F: '{print $2}')
+   
+   ./xlw apply -f xebialabs.yaml --xl-release-url http://localhost:$DOCKER_PORT 
+  displayName: 'Bash Script'
+  continueOnError: true
+  env:
+    XL_VALUE_RELEASE_NAME: $(testSecret)
+    XL_VALUE_BUILD_NUMBER: $(Build.BuildId)
+
+- task: DockerCompose@0
+  displayName: 'Stop Docker Compose'
+  inputs:
+    containerregistrytype: 'Container Registry'
+
+    dockerRegistryEndpoint: 'Docker XL'
+
+    dockerComposeCommand: down
+
+
