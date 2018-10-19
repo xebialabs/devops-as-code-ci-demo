@@ -1,0 +1,11 @@
+matrix:
+  include:
+  - os: windows
+    language: node_js
+    node_js:
+    - node
+    script:
+    - cmd.exe /c "xlw.bat apply -v -f xebialabs.yaml"
+  - os: linux
+    script:
+    - "./xlw apply -f xebialabs.yaml"
