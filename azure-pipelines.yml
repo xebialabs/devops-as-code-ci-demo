@@ -1,7 +1,7 @@
 resources:
 - repo: self
 queue:
-  name: Default
+  name: Hosted Ubuntu 1604
 steps:
 - task: DockerCompose@0
   displayName: 'Run a Docker Compose command'
@@ -24,10 +24,6 @@ steps:
 
 
 - bash: |
-   # Write your commands here
-   
-   # Use the environment variables input below to pass secret variables to this script
-   
    export DOCKER_PORT=$(docker port gitops_xl-release_1 5516 | awk -F: '{print $2}')
    
    ./xlw apply -f xebialabs.yaml --xl-release-url http://localhost:$DOCKER_PORT 

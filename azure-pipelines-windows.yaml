@@ -1,7 +1,7 @@
 resources:
 - repo: self
 queue:
-  name: Default
+  name: Hosted VS2017
 steps:
 - task: DockerCompose@0
   displayName: 'Run a Docker Compose command'
@@ -24,10 +24,6 @@ steps:
 
 
 - script: |
-   # Write your commands here
-   
-   # Use the environment variables input below to pass secret variables to this script
-   
    xlw apply -f xebialabs.yaml
   displayName: 'CMD Script'
   continueOnError: true
