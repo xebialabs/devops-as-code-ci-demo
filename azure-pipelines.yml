@@ -28,8 +28,6 @@ steps:
    
    # Use the environment variables input below to pass secret variables to this script
    
-   sleep 120
-   
    export DOCKER_PORT=$(docker port gitops_xl-release_1 5516 | awk -F: '{print $2}')
    
    ./xlw apply -f xebialabs.yaml --xl-release-url http://localhost:$DOCKER_PORT 
