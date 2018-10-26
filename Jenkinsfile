@@ -20,7 +20,7 @@ pipeline {
             environment {
                 XL_VALUE_BUILD_NUMBER = "${currentBuild.id}"
                 XL_VALUE_RELEASE_NAME = "Pipeline for ${currentBuild.id}"
-                XL_VALUE_TOKEN = vault path: 'xl/secrets', key: 'token'
+//                XL_VALUE_TOKEN = vault path: 'xl/secrets', key: 'token'
             }
             steps {
                 sh "./xlw apply -v -f xebialabs.yaml"
